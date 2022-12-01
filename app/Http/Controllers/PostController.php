@@ -3,9 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\PostStoreRequest;
+use App\Models\Posty;
 
 class PostController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index','show']);
+    }
     /**
      * Display a listing of the resource.
      *
@@ -13,9 +19,10 @@ class PostController extends Controller
      */
     public function index()
     {
-        return view('posty.index');
+        $posty = Posty::all();
+        return view('posty.index', compact('posty'));
     }
-
+ 
     /**
      * Show the form for creating a new resource.
      *
@@ -29,16 +36,16 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * param  \Illuminate\Http\Request  $request
+     * return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+   /*  public function store(Request $request)
     {
         //dd($request);
-        /* dump($request);
-        $request->dump();
-        echo $request->tytul;
-        sleep(2); */
+        // dump($request);
+        // $request->dump();
+        // echo $request->tytul;
+        // sleep(2);
         $request->validate([
             'tytul' => 'required',
             'autor' => 'required',
@@ -46,6 +53,23 @@ class PostController extends Controller
             'tresc' => 'required|min:5'
         ]);
 
+        return redirect()->route('posty.index')->with('message', 'Post został dodany');
+    } */
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  PostStoreRequest  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store(PostStoreRequest $request)
+    {
+        $posty = new Posty();
+        $posty->tytul = request('tytul');
+        $posty->autor = request('autor');
+        $posty->email = request('email');
+        $posty->tresc = request('tresc');
+        $posty->save();
         return redirect()->route('posty.index')->with('message', 'Post został dodany');
     }
 
@@ -57,7 +81,8 @@ class PostController extends Controller
      */
     public function show($id)
     {
-        //
+        $post = Posty::findOrFail($id);
+        return view('posty.post', compact('post'));
     }
 
     /**
@@ -68,7 +93,8 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        $post = Posty::findOrFail($id);
+        return view('posty.zmien', compact('post'));
     }
 
     /**
@@ -78,9 +104,16 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(PostStoreRequest $request, $id)
     {
-        //
+        $post = Posty::findOrFail($id);
+        /* $post->tytul = request('tytul');
+        $post->autor = request('autor');
+        $post->email = request('email');
+        $post->tresc = request('tresc');
+        $post->update(); */
+        $post->update(request()->all());
+        return redirect()->route('posty.index')->with('message', 'Post został uaktualniony');
     }
 
     /**
@@ -91,6 +124,8 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Posty::findOrFail($id);
+        $post->delete();
+        return redirect()->route('posty.index')->with('message', 'Post został usunięty')->with('type', 'danger');
     }
 }
