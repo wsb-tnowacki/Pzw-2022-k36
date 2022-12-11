@@ -20,4 +20,12 @@ class Posty extends Model
         'email',
         'tresc',
     ];
+    public function user()
+    {
+       return $this->belongsTo(User::class,'user_id');
+    }
+    public function update_user()
+    {
+       return $this->belongsTo(User::class,'update_user_id');
+    }
 }
